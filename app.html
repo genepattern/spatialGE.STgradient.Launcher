@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>spatialGE.STgradient.Launcher</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <!-- Import Bootstrap -->
+        <link rel="stylesheet" href="visualizer/bootstrap/css/bootstrap.min.css">
+        <script src="visualizer/jquery/jquery-3.7.1.min.js"></script>
+        <script src="visualizer/bootstrap/js/popper.min.js"></script>
+        <script src="visualizer/bootstrap/js/bootstrap.min.js"></script>
+
+        <!-- Load Vue -->
+        <script src="visualizer/vue/vue.global.min.js"></script>
+
+        <!-- Load GenePattern client -->
+        <script type="module" src="visualizer/genepattern/genepattern.mjs"></script>
+    </head>
+    <body id="app" >
+        <form class="container mt-3" @submit.prevent="handle_submit">
+            <div class="row">
+                <h3>Spatial gradients with STgradient</h3>
+                <p>STgradient tests for genes for which there is evidence of expression spatial gradients with respect to a
+                    “reference” tissue niche/domain (e.g., higher expression closer to reference tissue niche, lower
+                    expression as farther from reference tissue niche).</p>
+                <p>The method calculates distances from each spot/cell
+                    to the reference tissue niche/domain (e.g., a cluster defined via spatialGE.STclust) and correlates
+                    those distances with gene expression values from top variable genes (defined
+                    by standard deviation across ROIs/spots/cells). The distances to reference niche can be summarized using
+                    the average or the minimum value. Generally, the minimum distances might be better to capture gradients
+                    at short ranges, while average distances capture whole-tissue gradients. Use robust regression to
+                    reduce (albeit not eliminate) the effect of zero inflation in spatial transcriptomics data. The most
+                    variable genes to be tested are identified before removal of outliers.</p>
+            </div>
+            <div class="row">
+                <div id="error" class="alert alert-danger col-md-12 d-none"></div>
+            </div>
+
+            <div class="row">
+                <h4>Select samples to include</h4>
+                <table id="samples" class="table table-striped">
+                    <thead><tr>
+                        <th><input id="check-all" type="checkbox" @click="toggle_samples"></th>
+                        <th>Sample Name</th>
+                        <th>Total spots/cells</th>
+                        <th>Total genes</th>
+                        <th>Min. counts</th>
+                        <th>Avg. counts</th>
+                        <th>Max. counts</th>
+                        <th>Min. genes</th>
+                        <th>Avg. genes</th>
+                        <th>Max. genes</th>
+                    </tr></thead>
+                    <tbody>
+                        <tr v-for="(sample, index) in samples" :key="index">
+                            <td><input type="checkbox" class="form-control form-check" :id="`sample-${index}`" :value="sample.value" v-model="sample.selected"></td>
+                            <td>{{ sample.name }}</td>
+                            <td>{{ sample.total_spots }}</td>
+                            <td>{{ sample.total_genes }}</td>
+                            <td>{{ sample.min_counts }}</td>
+                            <td>{{ sample.avg_counts }}</td>
+                            <td>{{ sample.max_counts }}</td>
+                            <td>{{ sample.min_genes }}</td>
+                            <td>{{ sample.avg_genes }}</td>
+                            <td>{{ sample.max_genes }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="numVariableGenes"><strong>Number of most variable genes to use</strong></label>
+                    <input id="numVariableGenes" class="form-control" type="number" step="1" min="0" v-model.number="form.numVariableGenes" />
+                </div>
+
+                <div class="col-md-4">
+                    <label for="numVariableGenesSlider" class="form-label">&nbsp</label>
+                    <input type="range" class="form-control form-range" id="numVariableGenesSlider"step="1" min="0" max="3000" v-model.number="form.numVariableGenes">
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Annotation to test</strong></label>
+                    <select id="annotation" class="form-control form-select" v-model="form.annotationToTest">
+                        <option v-for="annotation in annotations" :key="annotation.value" :value="annotation.value">
+                            {{ annotation.label }}
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Reference cluster</strong></label>
+                    <select id="reference" class="form-control form-select" required v-model.number="form.referenceCluster">
+                        <option v-for="n in referenceClusterRange" :key="n.cluster" :value="n.cluster">{{ n.cluster }}</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label"><strong>Cluster to exclude (optional)</strong></label>
+                    <select id="exclude" class="form-control form-select" v-model="form.excludeClusters">
+                        <option v-for="n in excludeClusterRange" :key="n.cluster" :value="n.cluster">{{ n.cluster }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <!-- Checkbox for robust.regression -->
+                    <div class="form-check mb-2 mr-sm-2">
+                        <input type="checkbox" class="form-check-input" v-model="form.robustRegression" />
+                        <label class="form-check-label"><strong>Robust regression</strong></label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <!-- Checkbox for ignore.outliers -->
+                    <div class="form-check mb-2 mr-sm-2">
+                        <input type="checkbox" class="form-check-input" v-model="form.ignoreOutliers" :disabled="form.robustRegression" />
+                        <label class="form-check-label"><strong>Ignore outliers</strong></label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <label class="form-label" for="correlationLimit"><strong>Restrict correlation to this limit</strong></label>
+                    <input id="correlationLimit" class="form-control" type="number" step="0.01" v-model.number="form.correlationLimit" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="minNeighbors"><strong>Minimum number of neighbors</strong></label>
+                    <input id="minNeighbors" class="form-control" type="number" min="1" step="1" required v-model.number="form.minNeighbors" />
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="distanceSummary"><strong>Distance summary metric</strong></label>
+                    <select id="distanceSummary" class="form-control form-select" v-model="form.distanceSummary">
+                        <option v-for="(key, value) in distanceSummaryOptions" :key="key" :value="key">
+                            {{ value }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mt-3 mb-3">
+                <div class="col-md-12">
+                    <button class="btn btn-lg btn-primary" type="submit">Run STgradient</button>
+                </div>
+            </div>
+        </form>
+        <script type="module" src="js/app.js"></script>
+    </body>
+</html>

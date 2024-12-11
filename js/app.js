@@ -94,6 +94,17 @@ Vue.createApp({
                     annotation_change();
                 });
         },
+        checked_samples() {
+            const checks = document.getElementById('samples')
+                .querySelectorAll('tbody input[type=checkbox]:checked');
+            const names = [];
+            checks.forEach(element => {
+                if (element.hasAttribute('name')) {
+                    names.push(element.getAttribute('name'));
+                }
+            });
+            return names.join(',');
+        },
         validate() {
             // Placeholder for custom validation, for now rely on browser default
             return true;
@@ -105,7 +116,7 @@ Vue.createApp({
             let job = await run('spatialGE.STgradient',
                 [
                     {'name': 'input.file', 'values': [param('dataset')]},
-                    {'name': 'samples', 'values': [this.form.samples.join(',')]},
+                    {'name': 'samples', 'values': [this.checked_samples()]},
                     {'name': 'num.variable.genes', 'values': [this.form.numVariableGenes]},
                     {'name': 'annotation.to.test', 'values': [this.form.annotationToTest]},
                     {'name': 'reference.cluster', 'values': [this.form.referenceCluster]},

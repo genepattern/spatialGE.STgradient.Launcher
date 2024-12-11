@@ -55,7 +55,7 @@
                     </tr></thead>
                     <tbody>
                         <tr v-for="(sample, index) in samples" :key="index">
-                            <td><input type="checkbox" class="form-control form-check" :id="`sample-${index}`" :value="sample.value" v-model="sample.selected"></td>
+                            <td><input type="checkbox" class="form-control form-check" :name="`${sample.name}`" :id="`sample-${index}`" :value="sample.value" v-model="sample.selected"></td>
                             <td>{{ sample.name }}</td>
                             <td>{{ sample.total_spots }}</td>
                             <td>{{ sample.total_genes }}</td>

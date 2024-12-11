@@ -1,4 +1,4 @@
-import { auth_token, param } from '../visualizer/genepattern/visualizer_utils.mjs'
+import { param, run, poll_job } from '../visualizer/genepattern/visualizer_utils.js'
 
 Vue.createApp({
     data() {
@@ -50,10 +50,10 @@ Vue.createApp({
             this.samples.forEach(item => (item.selected = selected));
         },
         fetch_samples() {
-            let samples_url = param('samples.info');
+            let samples_url = param('sample.info');
             if (!samples_url) {
                 samples_url = 'data/samples.json';
-                this.error_message('Unable to get samples.info parameter\'s value');
+                this.error_message('Unable to get sample.info parameter\'s value');
             }
 
             fetch(samples_url)
@@ -95,22 +95,49 @@ Vue.createApp({
                 });
         },
         validate() {
-            // TODO
+            // Placeholder for custom validation, for now rely on browser default
+            return true;
         },
-        handle_submit() {
-            console.log(this.form);
+        async handle_submit() {
+            if (!this.validate()) return;
 
-            // let job = await run(url())
-            //
-            // // Poll for completion
-            // job = await poll(job);
-            //
-            // // Get the output data
-            // const odata = await output(job);
-            //
-            // // Display file once complete
-            // document.getElementById('output-file').innerHTML = output_url(job);
-            // document.getElementById('output-preview').innerHTML = odata;
+            document.getElementById('job-status').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting';
+            let job = await run('spatialGE.STgradient',
+                [
+                    {'name': 'input.file', 'values': [param('dataset')]},
+                    {'name': 'samples', 'values': [this.form.samples.join(',')]},
+                    {'name': 'num.variable.genes', 'values': [this.form.numVariableGenes]},
+                    {'name': 'annotation.to.test', 'values': [this.form.annotationToTest]},
+                    {'name': 'reference.cluster', 'values': [this.form.referenceCluster]},
+                    {'name': 'exclude.clusters', 'values': [this.form.excludeClusters]},
+                    {'name': 'robust.regression', 'values': [this.form.robustRegression ? 'True': 'False']},
+                    {'name': 'ignore.outliers', 'values': [this.form.ignoreOutliers ? 'True': 'False']},
+                    {'name': 'correlation.limit', 'values': [this.form.correlationLimit]},
+                    {'name': 'min.neighbors', 'values': [this.form.minNeighbors]},
+                    {'name': 'distance.summary', 'values': [this.form.distanceSummary]}
+                ]);
+
+            // Poll for completion
+            job = await poll_job(job, update => {
+                let status = '<i class="fa-solid fa-spinner fa-spin"></i> ';
+                if      (update.status.hasError)   status =  'Error';
+                else if (update.status.isFinished) status =  'Complete';
+                else if (update.status.isPending)  status += 'Pending';
+                else                               status += 'Running';
+
+                document.getElementById('job-status').innerHTML = status;
+            });
+
+
+
+            // Show the job results
+            let result_html = "<div class='alert alert-info'><h3>STgradient Results</h3><ul>";
+            for (const result of job.outputFiles) {
+                result_html += `<li><a href="${result.link.href}" target="_self">${result.link.name}</a></li>`;
+                console.log(result);
+            }
+            result_html += "</ul></div>";
+            document.getElementById('job-results').innerHTML = result_html;
         }
     }
 }).mount('#app');

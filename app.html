@@ -14,8 +14,9 @@
         <!-- Load Vue -->
         <script src="visualizer/vue/vue.global.min.js"></script>
 
-        <!-- Load GenePattern client -->
-        <script type="module" src="visualizer/genepattern/genepattern.mjs"></script>
+        <!-- Import Font Awesome -->
+        <link href="visualizer/fontawesome/css/fontawesome.css" rel="stylesheet" />
+        <link href="visualizer/fontawesome/css/solid.css" rel="stylesheet" />
     </head>
     <body id="app" >
         <form class="container mt-3" @submit.prevent="handle_submit">
@@ -142,12 +143,22 @@
                 </div>
             </div>
 
-            <div class="row mt-3 mb-3">
-                <div class="col-md-12">
+            <div class="row mt-3">
+                <div class="col-md-4">
                     <button class="btn btn-lg btn-primary" type="submit">Run STgradient</button>
+                </div>
+                <div class="col-md-4 mt-2">
+                    <h3 id="job-status"></h3>
+                </div>
+                <div class="col-md-4">
+                    <p class="text-muted">Submitted jobs may take several minutes to an hour to complete.</p>
+                </div>
+            </div>
+            <div class="row mt-3 mb-3">
+                <div id="job-results" class="col-md-12">
                 </div>
             </div>
         </form>
-        <script type="module" src="js/app.js"></script>
+        <script type="module" src="js/app.js" nomodule></script>
     </body>
 </html>

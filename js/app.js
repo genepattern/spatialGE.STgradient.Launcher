@@ -60,6 +60,7 @@ Vue.createApp({
                 .then(r => r.json())
                 .then(r => {
                     this.samples = r;
+                    document.getElementById('sample-loading').classList.add('d-none');
                     setTimeout(() => {
                         const slider_max = Math.max(...this.samples.map(s => s.max_genes));
                         document.getElementById('numVariableGenesSlider')?.setAttribute('max', slider_max);

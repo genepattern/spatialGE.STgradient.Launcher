@@ -54,6 +54,9 @@
                         <th>Max. genes</th>
                     </tr></thead>
                     <tbody>
+                        <tr id="sample-loading">
+                            <td colspan="10"><h3 class="text-center"><i class="fa-solid fa-spinner fa-spin"></i></h3></td>
+                        </tr>
                         <tr v-for="(sample, index) in samples" :key="index">
                             <td><input type="checkbox" class="form-control form-check" :name="`${sample.name}`" :id="`sample-${index}`" :value="sample.value" v-model="sample.selected"></td>
                             <td>{{ sample.name }}</td>

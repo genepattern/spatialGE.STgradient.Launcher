@@ -88,7 +88,7 @@ Vue.createApp({
 
                         this.referenceClusterRange = matching;
                         this.form.referenceCluster = matching?.[0]?.value;
-                        this.excludeClusterRange = matching;
+                        this.excludeClusterRange = ['', ...matching];
                         this.form.excludeClusters = null;
                     };
                     document.querySelector('#annotation').addEventListener('change', annotation_change);
@@ -112,6 +112,9 @@ Vue.createApp({
         },
         async handle_submit() {
             if (!this.validate()) return;
+
+           $('#form-collapse').collapse('hide');
+           $('#results-collapse').removeClass('d-none');
 
             document.getElementById('job-status').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting';
             let job = await run('spatialGE.STgradient',
@@ -140,16 +143,65 @@ Vue.createApp({
                 document.getElementById('job-status').innerHTML = status;
             });
 
-
+            window.send_to_stplot = (url) => {
+                if (window.parent.location && window.parent.location.hostname && 
+                    window.parent.location.hostname === window.location.hostname) window.open(url);
+                else {
+                    const instructions = $(`
+                        <div class="modal fade" id="stplot-modal" tabindex="-1" role="dialog" aria-hidden="true">
+                          <div class="modal-dialog" role="document">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title">Send to STplot</h5>
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                  <span aria-hidden="true">&times;</span>
+                                </button>
+                              </div>
+                              <div class="modal-body">
+                                To send your results to STplot, drag and drop the link for your <strong>rds</strong> file onto the <code>input.file</code> parameter of the <strong>spatialGE.STplot.Launcher</strong> module.
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                    `).appendTo('body')
+                    $(instructions).modal()
+                };
+            }
 
             // Show the job results
-            let result_html = "<div class='alert alert-info'><h3>STgradient Results</h3><ul>";
+            let result_html = `<table class="table table-sm table-striped">
+                                  <thead>
+                                    <tr>
+                                      <th scope="col">File</th>
+                                      <th scope="col">Actions</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>`;
             for (const result of job.outputFiles) {
-                result_html += `<li><a href="${result.link.href}" target="_self">${result.link.name}</a></li>`;
+                if (result.link.href.endsWith('.rds')) result_html += `
+                                    <tr><td><a href="Javascript:send_to_stplot('${result.link.href}')" target="_blank">${result.link.name}</a></td>
+                                        <td><a href="/gp/pages/index.jsf?lsid=spatialGE.STplot.Launcher&input.file=${encodeURIComponent(result.link.href)}" target="_blank" class="btn btn-primary btn-sm">Send to STplot</a>`;
+                else result_html += `<tr><td>${result.link.name}</td>
+                                        <td>
+                                            <a href="${result.link.href}?download" target="_blank" class="btn btn-secondary btn-sm">Download</a> 
+                                            <a href="Javascript:window.open('${result.link.href}');" class="btn btn-secondary btn-sm">Open in New Tab</a></td></tr>`;
                 console.log(result);
             }
-            result_html += "</ul></div>";
+            result_html += "</tbody></table>";
             document.getElementById('job-results').innerHTML = result_html;
         }
     }
 }).mount('#app');
+
+console.log('-----------------------------')
+console.log('window.location')
+console.log(window.location)
+console.log('window.parent.location')
+console.log(window.parent.location)
+console.log('document.referrer')
+console.log(document.referrer)
+console.log('document.location.href')
+console.log(document.location.href)

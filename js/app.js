@@ -195,13 +195,3 @@ Vue.createApp({
         }
     }
 }).mount('#app');
-
-console.log('-----------------------------')
-console.log('window.location')
-console.log(window.location)
-console.log('window.parent.location')
-console.log(window.parent.location)
-console.log('document.referrer')
-console.log(document.referrer)
-console.log('document.location.href')
-console.log(document.location.href)

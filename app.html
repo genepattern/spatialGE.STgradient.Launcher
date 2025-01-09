@@ -58,16 +58,16 @@
                             <td colspan="10"><h3 class="text-center"><i class="fa-solid fa-spinner fa-spin"></i></h3></td>
                         </tr>
                         <tr v-for="(sample, index) in samples" :key="index">
-                            <td><input type="checkbox" class="form-control form-check" :name="`${sample.name}`" :id="`sample-${index}`" :value="sample.value" v-model="sample.selected"></td>
-                            <td>{{ sample.name }}</td>
-                            <td>{{ sample.total_spots }}</td>
-                            <td>{{ sample.total_genes }}</td>
-                            <td>{{ sample.min_counts }}</td>
-                            <td>{{ sample.avg_counts }}</td>
-                            <td>{{ sample.max_counts }}</td>
-                            <td>{{ sample.min_genes }}</td>
-                            <td>{{ sample.avg_genes }}</td>
-                            <td>{{ sample.max_genes }}</td>
+                            <td><input type="checkbox" class="form-control form-check" :name="`${sample.sample_name}`" :id="`sample-${index}`" :value="sample.value" v-model="sample.selected"></td>
+                            <td>{{ sample.sample_name }}</td>
+                            <td>{{ sample.spotscells }}</td>
+                            <td>{{ sample.genes }}</td>
+                            <td>{{ sample.min_counts_per_spotcell }}</td>
+                            <td>{{ sample.mean_counts_per_spotcell }}</td>
+                            <td>{{ sample.max_counts_per_spotcell }}</td>
+                            <td>{{ sample.min_genes_per_spotcell }}</td>
+                            <td>{{ sample.mean_genes_per_spotcell }}</td>
+                            <td>{{ sample.max_genes_per_spotcell }}</td>
                         </tr>
                     </tbody>
                 </table>

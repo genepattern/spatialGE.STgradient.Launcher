@@ -17,6 +17,22 @@
         <!-- Import Font Awesome -->
         <link href="visualizer/fontawesome/css/fontawesome.css" rel="stylesheet" />
         <link href="visualizer/fontawesome/css/solid.css" rel="stylesheet" />
+        
+        <style>
+            #thumbs {
+                overflow-x: auto;
+                overflow-y: hidden;
+                white-space: nowrap;
+            }
+            
+            #thumbs img {
+                width: 100px;
+                height: 100px;
+                margin-right: 10px;
+                margin-bottom: 10px;
+                cursor: pointer;
+            }
+        </style>
     </head>
     <body id="app" >
         <form id="form-collapse" class="container mt-3" @submit.prevent="handle_submit">
@@ -105,6 +121,11 @@
                     <select id="exclude" class="form-control form-select" v-model="form.excludeClusters">
                         <option v-for="n in excludeClusterRange" :key="n.cluster" :value="n.cluster">{{ n.cluster }}</option>
                     </select>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div id="thumbs" class="col-md-12">
                 </div>
             </div>
 

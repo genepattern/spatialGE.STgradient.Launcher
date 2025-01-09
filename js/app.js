@@ -90,10 +90,35 @@ Vue.createApp({
                         this.form.referenceCluster = matching?.[0]?.value;
                         this.excludeClusterRange = ['', ...matching];
                         this.form.excludeClusters = null;
+                        this.show_thumbs(r.image_paths);
                     };
                     document.querySelector('#annotation').addEventListener('change', annotation_change);
                     annotation_change();
                 });
+        },
+        show_thumbs(image_paths) {
+            const thumbs_node = document.getElementById('thumbs');
+            if (thumbs_node) thumbs_node.innerHTML = '';
+            if (!image_paths || !image_paths.length) return;
+            
+            for (const i of image_paths)
+                if (i.includes(this.form.annotationToTest)) {
+                    const image_name = i.substring(i.lastIndexOf('/')+1, 
+                        i.indexOf(this.form.annotationToTest)).replace(/_$/, "");
+                    
+                    const thumbnail = document.createElement('img');
+                    thumbnail.setAttribute('src', i);
+                    thumbnail.classList.add('img-thumbnail');
+                    thumbnail.setAttribute('title', image_name);
+
+                    const link = document.createElement('a');
+                    link.setAttribute('href', i);
+                    link.setAttribute('target', '_BLANK');
+                    link.appendChild(thumbnail);
+                    
+                    thumbs_node.appendChild(link);
+                    $('#thumbs img').tooltip({placement: 'top'});
+                }
         },
         checked_samples() {
             const checks = document.getElementById('samples')

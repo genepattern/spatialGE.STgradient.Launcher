@@ -10,8 +10,6 @@
         <zip destfile="${dest.dir}/${ant.project.name}.zip" whenempty="fail" defaultexcludes="true">
             <fileset dir="." includes="*.html, manifest, doc.html"/>
             <zipfileset dir="js" prefix="js" includes="*.js"/>
-            <zipfileset dir="css" prefix="css" includes="*.css, images/**"/>
-            <zipfileset dir="fonts" prefix="fonts"/>
             <zipfileset dir="visualizer" prefix="visualizer"/>
         </zip>
         <antcall target="postzip"/>

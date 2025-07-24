@@ -1,4 +1,4 @@
-import { param, run, poll_job, auth_token } from '../visualizer/genepattern/visualizer_utils.js';
+import { param, run, poll_job, auth_token } from '/gp/visualizer/v1/genepattern/visualizer_utils.js'
 
 async function write_session(job_id, session_content, filename='session.json') {
     try {
@@ -204,7 +204,7 @@ Vue.createApp({
             document.getElementById('job-status').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${initial_status}`;
             let job = !job_id ? await run('spatialGE.STgradient',
                 [
-                    {'name': 'input.file', 'values': [param('dataset')]},
+                    {'name': 'input.file', 'values': [param('dataset', true)]},
                     {'name': 'samples', 'values': [this.checked_samples()]},
                     {'name': 'num.variable.genes', 'values': [this.form.numVariableGenes]},
                     {'name': 'annotation.to.test', 'values': [this.form.annotationToTest]},
